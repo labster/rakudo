@@ -57,17 +57,18 @@ my role Rational[::NuT, ::DeT] does Real {
 
     method Bridge() { self.Num }
 
-    multi method Str(::?CLASS:D:) {
+    multi method Str(::?CLASS:D: :$precision?) {
         my $s = $!numerator < 0 ?? '-' !! '';
         my $r = self.abs;
         my $i = $r.floor;
         $r -= $i;
         $s ~= $i;
         if $r {
-            $s ~= '.';
-            my $want = $!denominator < 100_000
-                       ?? 6
-                       !! $!denominator.Str.chars + 1;
+            my $want =  $precision ~~ Whatever  ?? 1000
+                     !! $precision.defined      ?? $precision.Int
+                     !! $!denominator < 100_000 ?? 6
+                                                !! $!denominator.Str.chars + 1;
+            $s ~= '.' if $want > 0;
             my $f = '';
             while $r and $f.chars < $want {
                 $r *= 10;
